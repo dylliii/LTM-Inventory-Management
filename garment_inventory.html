@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Garment Inventory (Samples)</title>
+<style>
+  :root{
+    --bg:#0f1220;
+    --card:#171a2b;
+    --muted:#9aa2b1;
+    --text:#f4f6fb;
+    --accent:#6ea8fe;
+    --accent-2:#7ee787;
+    --warn:#ffb86b;
+    --danger:#ff7b72;
+    --ok:#2ea043;
+    --border:#23263a;
+    --chip:#22263b;
+    --chip-text:#c7cbe1;
+    --input:#101323;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    background:linear-gradient(180deg,#0b0e1a 0%, #0f1220 100%);
+    color:var(--text);
+  }
+  header{
+    position:sticky; top:0; z-index:5;
+    backdrop-filter: blur(8px);
+    background:rgba(15,18,32,0.75);
+    border-bottom:1px solid var(--border);
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:16px;}
+  .brand{
+    display:flex; align-items:center; gap:12px;
+  }
+  .brand .dot{
+    width:12px; height:12px; border-radius:50%; background:var(--accent);
+    box-shadow:0 0 12px var(--accent);
+  }
+  .brand h1{font-size:18px; margin:0}
+  nav{margin-top:12px; display:flex; gap:8px; flex-wrap:wrap}
+  .tab{
+    padding:10px 14px; border:1px solid var(--border); border-radius:10px;
+    background: var(--card);
+    color:var(--text);
+    cursor:pointer; user-select:none;
+  }
+  .tab.active{outline:2px solid var(--accent);}
+  main{padding:24px 0;}
+  .cards{display:grid; grid-template-columns:1fr; gap:16px;}
+  @media(min-width:900px){
+    .cards{grid-template-columns: 1fr 1fr;}
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+  }
+  h2{margin:0 0 12px 0; font-size:18px}
+  h3{margin:0 0 12px 0; font-size:16px; color:var(--muted)}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+  input, select, textarea{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--input); color:var(--text);
+  }
+  .row{display:grid; grid-template-columns:1fr; gap:12px}
+  @media(min-width:700px){ .row-2{grid-template-columns:1fr 1fr} .row-3{grid-template-columns:1fr 1fr 1fr} .row-4{grid-template-columns:1fr 1fr 1fr 1fr} }
+  .btn{
+    padding:10px 14px; border-radius:10px; border:1px solid var(--border);
+    background:var(--chip); color:var(--text); cursor:pointer;
+  }
+  .btn.primary{background:linear-gradient(180deg, #2b68ff, #1e4de0); border-color:#1840c0;}
+  .btn.success{background:linear-gradient(180deg, #1f9d55, #187a43); border-color:#166333;}
+  .btn.warn{background:linear-gradient(180deg, #ffb86b, #eaa153); color:#1a1208; border-color:#c78639;}
+  .btn.outline{background:transparent}
+  .btn:disabled{opacity:0.6; cursor:not-allowed}
+  .actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  table{width:100%; border-collapse:collapse; font-size:14px}
+  th, td{padding:10px 8px; border-bottom:1px dashed var(--border); text-align:left}
+  th{font-weight:600; color:var(--muted);}
+  tr:hover{background:rgba(255,255,255,0.02)}
+  .chip{
+    display:inline-flex; gap:6px; align-items:center; padding:6px 10px; background:var(--chip);
+    color:var(--chip-text); border-radius:999px; font-size:12px; border:1px solid var(--border);
+  }
+  .chip.warn{background:rgba(255,184,107,0.12); color:#ffd9ad; border-color:#8f6a42}
+  .chip.danger{background:rgba(255,123,114,0.12); color:#ffb3ad; border-color:#8c504a}
+  .chip.ok{background:rgba(46,160,67,0.12); color:#a6e9b8; border-color:#2e8041}
+  .muted{color:var(--muted)}
+  .right{display:flex; justify-content:flex-end}
+  .searchbar{display:flex; gap:8px}
+  .pill{
+    border-radius:999px; padding:6px 10px; border:1px solid var(--border); background:var(--input); color:var(--text);
+  }
+  .low{color:var(--warn); font-weight:600}
+  .crit{color:var(--danger); font-weight:700}
+  .toast{
+    position:fixed; right:16px; bottom:16px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  }
+  .hidden{display:none}
+  .grid-3{display:grid; grid-template-columns:1fr; gap:12px}
+  @media(min-width:900px){.grid-3{grid-template-columns:1.2fr 1fr 1fr}}
+  .note{font-size:12px; color:var(--muted)}
+  .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; background:#0b0e1a; border:1px solid var(--border); border-radius:6px; padding:2px 6px; font-size:12px}
+  .link{color:var(--accent); text-decoration:underline; cursor:pointer}
+  .divider{height:1px; background:var(--border); margin:12px 0}
+  .summary{display:flex; gap:12px; flex-wrap:wrap}
+  .summary .card{flex:1; min-width:220px}
+  .center{display:flex; align-items:center; justify-content:center}
+  .subtle{opacity:0.9}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Garment Inventory — Samples</h1>
+      <span class="chip" id="lowStockBadge">Low stock: 0</span>
+    </div>
+    <nav>
+      <button class="tab active" data-tab="itemsTab">Items</button>
+      <button class="tab" data-tab="movementsTab">In/Out</button>
+      <button class="tab" data-tab="reportsTab">Reports</button>
+      <button class="tab" data-tab="settingsTab">Settings</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ITEMS TAB -->
+  <section id="itemsTab" class="tab-pane">
+    <div class="cards">
+      <div class="card">
+        <h2>Add / Edit Item</h2>
+        <div class="row row-3">
+          <div>
+            <label>Item Code <span class="note">(unique)</span></label>
+            <input id="itemCode" placeholder="TT-BLK-25" />
+          </div>
+          <div>
+            <label>Category</label>
+            <input id="category" placeholder="Twill Tape, Draw Cord, ..." />
+          </div>
+          <div>
+            <label>Description</label>
+            <input id="description" placeholder="Black twill tape 25mm" />
+          </div>
+          <div>
+            <label>Color</label>
+            <input id="color" placeholder="Black" />
+          </div>
+          <div>
+            <label>Size / Width</label>
+            <input id="size" placeholder="25mm" />
+          </div>
+          <div>
+            <label>Unit</label>
+            <select id="unit">
+              <option value="m">meters</option>
+              <option value="pcs">pieces</option>
+            </select>
+          </div>
+          <div>
+            <label>Unit Cost</label>
+            <input id="unitCost" type="number" step="0.0001" placeholder="0.50" />
+          </div>
+          <div>
+            <label>Location</label>
+            <input id="location" placeholder="Rack 2, Box 5" />
+          </div>
+          <div>
+            <label>Minimum Level (alert)</label>
+            <input id="minLevel" type="number" step="0.01" placeholder="20" />
+          </div>
+        </div>
+        <div class="actions" style="margin-top:12px">
+          <button class="btn" id="genCodeBtn">Suggest Code</button>
+          <button class="btn success" id="saveItemBtn">Save Item</button>
+          <button class="btn outline" id="resetItemBtn">Reset</button>
+        </div>
+        <div class="note" style="margin-top:8px">Tip: Item Code pattern like <span class="kbd">TT-BLK-25</span> (Twill Tape · Black · 25mm).</div>
+      </div>
+
+      <div class="card">
+        <h2>Items</h2>
+        <div class="searchbar">
+          <input class="pill" id="searchItems" placeholder="Search item code, color, category... (Ctrl+/)"/>
+          <select class="pill" id="filterCategory"></select>
+          <button class="btn" id="exportBtn">Export JSON</button>
+          <input type="file" id="importFile" accept=".json" class="pill" />
+        </div>
+        <div class="divider"></div>
+        <div style="max-height:420px; overflow:auto">
+          <table id="itemsTable">
+            <thead>
+              <tr>
+                <th>Item Code</th>
+                <th>Category</th>
+                <th>Desc</th>
+                <th>Color</th>
+                <th>Size</th>
+                <th>Unit</th>
+                <th>On Hand</th>
+                <th>Min</th>
+                <th>Location</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOVEMENTS TAB -->
+  <section id="movementsTab" class="tab-pane hidden">
+    <div class="grid-3">
+      <div class="card">
+        <h2>Log Stock Movement</h2>
+        <div class="row row-2">
+          <div>
+            <label>Type</label>
+            <select id="mvType">
+              <option value="IN">IN (Add)</option>
+              <option value="OUT">OUT (Use/Sent)</option>
+            </select>
+          </div>
+          <div>
+            <label>Date</label>
+            <input id="mvDate" type="date"/>
+          </div>
+          <div>
+            <label>Item</label>
+            <select id="mvItem"></select>
+          </div>
+          <div>
+            <label>Quantity</label>
+            <input id="mvQty" type="number" step="0.01" placeholder="e.g., 10"/>
+          </div>
+          <div>
+            <label>Notes (customer / purpose)</label>
+            <input id="mvNotes" placeholder="Nike samples / internal test"/>
+          </div>
+        </div>
+        <div class="actions" style="margin-top:12px">
+          <button class="btn primary" id="addMovementBtn">Add Movement</button>
+          <button class="btn outline" id="clearMovementBtn">Clear</button>
+        </div>
+        <div class="note" style="margin-top:8px">OUT movements reduce stock; IN movements increase it.</div>
+      </div>
+
+      <div class="card">
+        <h2>Recent Movements</h2>
+        <div style="max-height:420px; overflow:auto">
+          <table id="mvTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Item Code</th>
+                <th>Qty</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Quick Stats</h2>
+        <div class="summary" id="statsSummary">
+          <!-- cards injected -->
+        </div>
+        <div class="divider"></div>
+        <div id="lowList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORTS TAB -->
+  <section id="reportsTab" class="tab-pane hidden">
+    <div class="cards">
+      <div class="card">
+        <h2>Monthly Usage (OUT) & Cost</h2>
+        <div class="row row-3">
+          <div>
+            <label>Start Month</label>
+            <input id="rStart" type="month"/>
+          </div>
+          <div>
+            <label>End Month</label>
+            <input id="rEnd" type="month"/>
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button class="btn" id="runReportBtn">Run Report</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div id="reportArea">
+          <div class="note">Select a date range and click <b>Run Report</b> to see totals per month and per item.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Snapshot</h2>
+        <div id="snapshotArea">
+          <!-- populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS TAB -->
+  <section id="settingsTab" class="tab-pane hidden">
+    <div class="cards">
+      <div class="card">
+        <h2>Backup & Restore</h2>
+        <div class="actions">
+          <button class="btn" id="exportAllBtn">Export All (JSON)</button>
+          <input type="file" id="importAllFile" accept=".json" class="pill"/>
+        </div>
+        <div class="note" style="margin-top:8px">Data is stored locally in your browser (offline). Export regularly to keep a backup.</div>
+        <div class="divider"></div>
+        <button class="btn warn" id="resetAllBtn">Wipe Everything</button>
+      </div>
+      <div class="card">
+        <h2>About</h2>
+        <p class="subtle">Garment Inventory — Samples. Lightweight, offline-first tracker for twill tapes, draw cords, and more. Built with love for Nee & Dad 💙</p>
+        <ul class="subtle">
+          <li>Unique item codes, categories, units (m/pcs)</li>
+          <li>Low-stock alerts with thresholds</li>
+          <li>IN/OUT movement log</li>
+          <li>Monthly usage & cost reports</li>
+          <li>Import/Export JSON</li>
+        </ul>
+        <p class="note">Tip: press <span class="kbd">Ctrl+/</span> to focus search.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast hidden" id="toast"></div>
+
+<script>
+(function(){
+  const el = id => document.getElementById(id);
+  const fmt = n => (Number(n)||0).toLocaleString(undefined,{maximumFractionDigits:2});
+  const todayISO = () => new Date().toISOString().slice(0,10);
+  const monthsKey = d => d.slice(0,7); // YYYY-MM
+
+  const KEYS = {
+    items: 'ims_items_v1',
+    moves: 'ims_moves_v1'
+  };
+
+  const state = {
+    items: load(KEYS.items) || [],
+    moves: load(KEYS.moves) || []
+  };
+
+  function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+  function load(key){ try{ return JSON.parse(localStorage.getItem(key)); }catch(e){return null;} }
+  function toast(msg){ const t=el('toast'); t.textContent=msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'), 2200); }
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-pane').forEach(p=>p.classList.add('hidden'));
+      el(btn.dataset.tab).classList.remove('hidden');
+    });
+  });
+
+  // Populate category filter and mv item select
+  function refreshSelectors(){
+    const categories = Array.from(new Set(state.items.map(i=>i.category).filter(Boolean))).sort();
+    const catSel = el('filterCategory');
+    catSel.innerHTML = '<option value="">All categories</option>' + categories.map(c=>`<option>${escapeHtml(c)}</option>`).join('');
+
+    const mvItem = el('mvItem');
+    mvItem.innerHTML = state.items.sort((a,b)=>a.itemCode.localeCompare(b.itemCode)).map(i=>`<option value="${i.id}">${escapeHtml(i.itemCode)} — ${escapeHtml(i.description||'')}</option>`).join('');
+  }
+
+  // Escape HTML to avoid injection
+  function escapeHtml(str){
+    return (str||'').replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+
+  // On load defaults
+  if(!state.items.length && !state.moves.length){
+    // seed with an example
+    const id = crypto.randomUUID();
+    state.items.push({
+      id, itemCode:'TT-BLK-25', category:'Twill Tape', description:'Black twill tape 25mm', color:'Black',
+      size:'25mm', unit:'m', unitCost:0.5, location:'Rack 2, Box 5', minLevel:20, createdAt:todayISO()
+    });
+    state.moves.push({id:crypto.randomUUID(), itemId:id, type:'IN', qty:100, date: todayISO(), notes:'Initial stock'});
+    save(KEYS.items, state.items); save(KEYS.moves, state.moves);
+  }
+
+  // ITEMS UI
+  function currentQty(itemId){
+    const rel = state.moves.filter(m=>m.itemId===itemId);
+    let q=0;
+    for(const m of rel){ q += (m.type==='IN' ? 1 : -1) * Number(m.qty||0); }
+    return q;
+  }
+
+  function lowStockCount(){
+    return state.items.filter(i => Number(currentQty(i.id)) <= Number(i.minLevel||0)).length;
+  }
+
+  function renderItems(){
+    const q = el('searchItems').value.toLowerCase().trim();
+    const fc = el('filterCategory').value;
+    const tbody = document.querySelector('#itemsTable tbody');
+    tbody.innerHTML = '';
+    const items = state.items
+      .filter(i => ( !fc || i.category===fc ))
+      .filter(i => {
+        const hay = [i.itemCode,i.category,i.description,i.color,i.size,i.location].join(' ').toLowerCase();
+        return !q || hay.includes(q);
+      })
+      .sort((a,b)=>a.itemCode.localeCompare(b.itemCode));
+    for(const i of items){
+      const qty = currentQty(i.id);
+      const low = qty<=Number(i.minLevel||0);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="kbd">${escapeHtml(i.itemCode)}</span></td>
+        <td>${escapeHtml(i.category||'')}</td>
+        <td>${escapeHtml(i.description||'')}</td>
+        <td>${escapeHtml(i.color||'')}</td>
+        <td>${escapeHtml(i.size||'')}</td>
+        <td>${escapeHtml(i.unit||'')}</td>
+        <td>${ low ? `<span class="${qty<=0?'crit':'low'}">${fmt(qty)}</span>` : fmt(qty) }</td>
+        <td>${fmt(i.minLevel||0)}</td>
+        <td>${escapeHtml(i.location||'')}</td>
+        <td class="right">
+          <button class="btn" data-edit="${i.id}">Edit</button>
+          <button class="btn outline" data-del="${i.id}">Delete</button>
+        </td>`;
+      tbody.appendChild(tr);
+    }
+    // attach handlers
+    tbody.querySelectorAll('button[data-edit]').forEach(b=>b.onclick = ()=>loadItem(b.dataset.edit));
+    tbody.querySelectorAll('button[data-del]').forEach(b=>b.onclick = ()=>deleteItem(b.dataset.del));
+
+    // badge
+    el('lowStockBadge').textContent = `Low stock: ${lowStockCount()}`;
+  }
+
+  function loadItem(id){
+    const i = state.items.find(x=>x.id===id);
+    if(!i) return;
+    el('itemCode').value = i.itemCode||'';
+    el('category').value = i.category||'';
+    el('description').value = i.description||'';
+    el('color').value = i.color||'';
+    el('size').value = i.size||'';
+    el('unit').value = i.unit||'m';
+    el('unitCost').value = i.unitCost||'';
+    el('location').value = i.location||'';
+    el('minLevel').value = i.minLevel||'';
+    el('saveItemBtn').dataset.editing = id;
+    toast('Loaded item for editing');
+  }
+
+  function deleteItem(id){
+    if(!confirm('Delete this item? Movements will remain but become orphaned unless you re-add item with same id.')) return;
+    state.items = state.items.filter(x=>x.id!==id);
+    save(KEYS.items, state.items);
+    refreshSelectors(); renderItems(); renderMovements(); renderLowList(); renderStats();
+  }
+
+  el('genCodeBtn').onclick = ()=>{
+    const cat = (el('category').value||'').trim();
+    const color = (el('color').value||'').trim();
+    const size = (el('size').value||'').trim();
+    const catCode = (cat.split(' ').map(s=>s[0]).join('') || 'IT').toUpperCase().slice(0,2);
+    const colorCode = (color ? color.slice(0,3) : 'NRM').toUpperCase();
+    const sizeCode = size.replace(/\s+/g,'').toUpperCase();
+    el('itemCode').value = [catCode, colorCode, sizeCode].filter(Boolean).join('-');
+  };
+
+  el('saveItemBtn').onclick = ()=>{
+    const payload = {
+      itemCode: el('itemCode').value.trim(),
+      category: el('category').value.trim(),
+      description: el('description').value.trim(),
+      color: el('color').value.trim(),
+      size: el('size').value.trim(),
+      unit: el('unit').value,
+      unitCost: Number(el('unitCost').value||0),
+      location: el('location').value.trim(),
+      minLevel: Number(el('minLevel').value||0),
+    };
+    if(!payload.itemCode){ toast('Item Code is required'); return; }
+    // uniqueness check
+    const editing = el('saveItemBtn').dataset.editing;
+    if(editing){
+      const idx = state.items.findIndex(i=>i.id===editing);
+      if(idx>-1){
+        state.items[idx] = {...state.items[idx], ...payload};
+      }
+      delete el('saveItemBtn').dataset.editing;
+      toast('Item updated');
+    } else {
+      if(state.items.some(i=>i.itemCode.toLowerCase()===payload.itemCode.toLowerCase())){
+        toast('Item Code already exists'); return;
+      }
+      state.items.push({id: crypto.randomUUID(), ...payload, createdAt: todayISO()});
+      toast('Item added');
+    }
+    save(KEYS.items, state.items);
+    refreshSelectors(); renderItems(); renderLowList(); renderStats();
+    resetItemForm();
+  };
+
+  function resetItemForm(){
+    ['itemCode','category','description','color','size','unitCost','location','minLevel'].forEach(k=>el(k).value='');
+    el('unit').value='m';
+  }
+  el('resetItemBtn').onclick = resetItemForm;
+
+  el('searchItems').addEventListener('input', renderItems);
+  el('filterCategory').addEventListener('change', renderItems);
+  document.addEventListener('keydown', (e)=>{
+    if((e.ctrlKey || e.metaKey) && e.key === '/'){ e.preventDefault(); el('searchItems').focus(); }
+  });
+
+  // MOVEMENTS
+  function renderMovements(){
+    const tbody = document.querySelector('#mvTable tbody');
+    tbody.innerHTML = '';
+    const sorted = [...state.moves].sort((a,b)=> (b.date||'').localeCompare(a.date||'') || 0).slice(0,200);
+    for(const m of sorted){
+      const it = state.items.find(i=>i.id===m.itemId);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(m.date||'')}</td>
+        <td>${m.type==='IN' ? '<span class="chip ok">IN</span>' : '<span class="chip danger">OUT</span>'}</td>
+        <td>${escapeHtml(it?.itemCode || '—')}</td>
+        <td>${fmt(m.qty)}</td>
+        <td>${escapeHtml(m.notes||'')}</td>
+        <td class="right"><button class="btn outline" data-del="${m.id}">Delete</button></td>`;
+      tbody.appendChild(tr);
+    }
+    tbody.querySelectorAll('button[data-del]').forEach(b=>b.onclick = ()=>deleteMovement(b.dataset.del));
+  }
+
+  function deleteMovement(id){
+    if(!confirm('Delete this movement?')) return;
+    state.moves = state.moves.filter(m=>m.id!==id);
+    save(KEYS.moves, state.moves);
+    renderMovements(); renderItems(); renderLowList(); renderStats();
+  }
+
+  el('addMovementBtn').onclick = ()=>{
+    const mv = {
+      id: crypto.randomUUID(),
+      type: el('mvType').value,
+      date: el('mvDate').value || todayISO(),
+      itemId: el('mvItem').value,
+      qty: Number(el('mvQty').value||0),
+      notes: el('mvNotes').value.trim()
+    };
+    if(!mv.itemId){ toast('Select an item'); return; }
+    if(!mv.qty || mv.qty<=0){ toast('Quantity must be > 0'); return; }
+    // Prevent negative stock if OUT would exceed on hand
+    if(mv.type==='OUT'){
+      const onHand = currentQty(mv.itemId);
+      if(mv.qty > onHand){
+        if(!confirm(`You are taking OUT ${mv.qty} but only ${onHand} on hand. Continue?`)) return;
+      }
+    }
+    state.moves.push(mv);
+    save(KEYS.moves, state.moves);
+    renderMovements(); renderItems(); renderLowList(); renderStats();
+    el('mvQty').value=''; el('mvNotes').value='';
+    toast('Movement recorded');
+  };
+  el('clearMovementBtn').onclick = ()=>{ el('mvQty').value=''; el('mvNotes').value=''; };
+
+  // Quick Stats & Low list
+  function renderStats(){
+    const totalItems = state.items.length;
+    const totalQty = state.items.reduce((acc,i)=> acc + currentQty(i.id), 0);
+    const low = lowStockCount();
+    const outMonth = monthlyAgg(new Date().toISOString().slice(0,7)); // current month
+    const div = el('statsSummary');
+    div.innerHTML = '';
+    div.appendChild(statCard('Total Items', fmt(totalItems)));
+    div.appendChild(statCard('Total On Hand (sum of units)', fmt(totalQty)));
+    div.appendChild(statCard('Low Stock Items', fmt(low)));
+    div.appendChild(statCard('This Month Usage (OUT)', fmt(outMonth.qty)+' units · $'+fmt(outMonth.cost)));
+  }
+  function statCard(title, val){
+    const c = document.createElement('div');
+    c.className='card';
+    c.innerHTML = `<h3>${escapeHtml(title)}</h3><div style="font-size:22px; font-weight:700">${escapeHtml(val)}</div>`;
+    return c;
+  }
+
+  function renderLowList(){
+    const list = el('lowList');
+    const lows = state.items
+      .map(i=>({i, qty: currentQty(i.id)}))
+      .filter(x=> x.qty <= Number(x.i.minLevel||0))
+      .sort((a,b)=> a.qty-b.qty);
+    list.innerHTML = '<h3>Low Stock Alerts</h3>';
+    if(!lows.length){ list.innerHTML += '<div class="note">All good. No items under minimum level.</div>'; return; }
+    const ul = document.createElement('div');
+    for(const {i, qty} of lows){
+      const chip = document.createElement('div');
+      chip.className='chip warn';
+      chip.innerHTML = `<b>${escapeHtml(i.itemCode)}</b> &middot; On hand: <b>${fmt(qty)}</b> (Min ${fmt(i.minLevel||0)})`;
+      ul.appendChild(chip);
+    }
+    list.appendChild(ul);
+  }
+
+  // Reports
+  function monthlyAgg(monthStr){ // YYYY-MM
+    // returns total OUT qty and cost for a month
+    const monthMoves = state.moves.filter(m=> m.type==='OUT' && monthsKey(m.date||'').startsWith(monthStr));
+    let qty=0, cost=0;
+    for(const m of monthMoves){
+      const it = state.items.find(i=>i.id===m.itemId); if(!it) continue;
+      qty += Number(m.qty||0);
+      cost += Number(m.qty||0) * Number(it.unitCost||0);
+    }
+    return {qty, cost};
+  }
+
+  function rangeMonths(start, end){ // 'YYYY-MM'
+    const out=[];
+    const [ys,ms]=start.split('-').map(Number);
+    const [ye,me]=end.split('-').map(Number);
+    let y=ys, m=ms;
+    while(y<ye || (y===ye && m<=me)){
+      out.push(`${y}-${String(m).padStart(2,'0')}`);
+      m++; if(m>12){ m=1; y++; }
+    }
+    return out;
+  }
+
+  el('runReportBtn').onclick = ()=>{
+    const s = el('rStart').value;
+    const e = el('rEnd').value;
+    if(!s || !e){ toast('Select start and end months'); return; }
+    if(s>e){ toast('Start must be <= End'); return; }
+    const months = rangeMonths(s, e);
+    const area = el('reportArea');
+    let html = '';
+    // Monthly totals
+    html += '<table><thead><tr><th>Month</th><th>Total OUT (units)</th><th>Total Cost</th></tr></thead><tbody>';
+    let grandQty=0, grandCost=0;
+    for(const m of months){
+      const agg = monthlyAgg(m);
+      grandQty += agg.qty; grandCost += agg.cost;
+      html += `<tr><td>${m}</td><td>${fmt(agg.qty)}</td><td>$${fmt(agg.cost)}</td></tr>`;
+    }
+    html += `<tr><th>Grand Total</th><th>${fmt(grandQty)}</th><th>$${fmt(grandCost)}</th></tr>`;
+    html += '</tbody></table>';
+    html += '<div class="divider"></div>';
+
+    // Per-item breakdown across range
+    const map = new Map();
+    for(const mv of state.moves){
+      if(mv.type!=='OUT') continue;
+      const key = monthsKey(mv.date||'');
+      if(!months.includes(key)) continue;
+      const it = state.items.find(i=>i.id===mv.itemId); if(!it) continue;
+      const code = it.itemCode;
+      const prev = map.get(code) || {qty:0, cost:0, unit:it.unit};
+      prev.qty += Number(mv.qty||0);
+      prev.cost += Number(mv.qty||0)*Number(it.unitCost||0);
+      map.set(code, prev);
+    }
+    html += '<h3>By Item (OUT)</h3>';
+    html += '<table><thead><tr><th>Item Code</th><th>Total OUT</th><th>Unit</th><th>Total Cost</th></tr></thead><tbody>';
+    for(const [code,val] of Array.from(map.entries()).sort((a,b)=>b[1].qty-a[1].qty)){
+      html += `<tr><td><span class="kbd">${escapeHtml(code)}</span></td><td>${fmt(val.qty)}</td><td>${escapeHtml(val.unit||'')}</td><td>$${fmt(val.cost)}</td></tr>`;
+    }
+    if(map.size===0){ html += '<tr><td colspan="4" class="muted">No OUT movements in this range.</td></tr>'; }
+    html += '</tbody></table>';
+    area.innerHTML = html;
+
+    // Snapshot update
+    renderSnapshot();
+  };
+
+  function renderSnapshot(){
+    const snap = el('snapshotArea');
+    const totalItems = state.items.length;
+    const totalStockVal = state.items.reduce((acc,i)=> acc + currentQty(i.id)*Number(i.unitCost||0), 0);
+    const critCount = state.items.filter(i=> currentQty(i.id)<=0).length;
+    snap.innerHTML = `
+      <div class="summary">
+        <div class="card"><h3>Total Items</h3><div style="font-size:22px; font-weight:700">${fmt(totalItems)}</div></div>
+        <div class="card"><h3>Inventory Value (at cost)</h3><div style="font-size:22px; font-weight:700">$${fmt(totalStockVal)}</div></div>
+        <div class="card"><h3>Zero/Negative Stock</h3><div style="font-size:22px; font-weight:700">${fmt(critCount)}</div></div>
+      </div>
+    `;
+  }
+
+  // Export / Import (Items only list)
+  el('exportBtn').onclick = ()=>{
+    const data = JSON.stringify(state.items, null, 2);
+    download('items.json', data);
+  };
+  el('importFile').addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const arr = JSON.parse(ev.target.result);
+        if(!Array.isArray(arr)) throw new Error('Invalid JSON');
+        // keep id if provided; ensure unique itemCode
+        for(const obj of arr){
+          if(!obj.id) obj.id = crypto.randomUUID();
+        }
+        const codes = new Set();
+        for(const obj of arr){
+          const code = (obj.itemCode||'').toLowerCase();
+          if(!code || codes.has(code)) throw new Error('Duplicate or missing itemCode in import');
+          codes.add(code);
+        }
+        state.items = arr;
+        save(KEYS.items, state.items);
+        refreshSelectors(); renderItems(); renderLowList(); renderStats();
+        toast('Items imported');
+      }catch(err){ alert('Import failed: '+err.message); }
+    };
+    reader.readAsText(f);
+  });
+
+  // Export / Import ALL
+  el('exportAllBtn').onclick = ()=>{
+    const data = JSON.stringify({items:state.items, moves:state.moves}, null, 2);
+    download('garment_inventory_backup.json', data);
+  };
+  el('importAllFile').addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const obj = JSON.parse(ev.target.result);
+        if(!obj || !Array.isArray(obj.items) || !Array.isArray(obj.moves)) throw new Error('Invalid JSON structure');
+        state.items = obj.items;
+        state.moves = obj.moves;
+        save(KEYS.items, state.items); save(KEYS.moves, state.moves);
+        refreshSelectors(); renderItems(); renderMovements(); renderLowList(); renderStats();
+        toast('All data imported');
+      }catch(err){ alert('Import failed: '+err.message); }
+    };
+    reader.readAsText(f);
+  });
+
+  el('resetAllBtn').onclick = ()=>{
+    if(!confirm('This will wipe all items and movements. Are you sure?')) return;
+    localStorage.removeItem(KEYS.items);
+    localStorage.removeItem(KEYS.moves);
+    state.items=[]; state.moves=[];
+    refreshSelectors(); renderItems(); renderMovements(); renderLowList(); renderStats(); renderSnapshot();
+    toast('Everything wiped');
+  };
+
+  function download(filename, text){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], {type:'application/json'}));
+    a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // Initial setup
+  function init(){
+    // set defaults
+    el('mvDate').value = todayISO();
+    refreshSelectors();
+    renderItems();
+    renderMovements();
+    renderLowList();
+    renderStats();
+    renderSnapshot();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
